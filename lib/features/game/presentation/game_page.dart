@@ -141,7 +141,8 @@ class _GamePageState extends State<GamePage> {
     setState(() {
       _foundWords.add(word);
       _combo += 1;
-      _score += 10 + ((_combo - 1).clamp(0, 5) * 5);
+      final comboBonus = ((_combo + 1).clamp(0, 6) - 1) * 5;
+      _score += 10 + comboBonus;
       _selectedIndexes = [];
       _feedbackWord = word;
       _feedbackSuccess = true;
@@ -165,7 +166,7 @@ class _GamePageState extends State<GamePage> {
         _stage.id,
         maxStageId: widget.repository.stages.last.id,
       );
-      Future.delayed(const Duration(milliseconds: 400), _showStageCompleted);
+      Future.delayed(const Duration(milliseconds: 900), _showStageCompleted);
     }
   }
 
@@ -222,9 +223,11 @@ class _GamePageState extends State<GamePage> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-          child: Column(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+              child: Column(
             children: [
               LinearProgressIndicator(
                 value: progress,
