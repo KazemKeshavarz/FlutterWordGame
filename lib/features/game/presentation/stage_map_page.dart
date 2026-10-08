@@ -90,6 +90,7 @@ class _StageTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _StageTile({
+    super.key,
     required this.stageId,
     required this.locked,
     required this.completed,
@@ -117,50 +118,50 @@ class _StageTile extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
         borderRadius: BorderRadius.circular(22),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: locked ? Colors.black12 : color.withOpacity(0.35),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: locked ? Colors.black12 : color.withOpacity(0.35),
+              ),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                locked
-                    ? Icons.lock_outline
-                    : completed
-                        ? Icons.check_circle_outline
-                        : Icons.play_circle_outline,
-                size: 42,
-                color: locked ? Colors.grey : color,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'مرحله $stageId',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                locked ? 'قفل' : completed ? 'تکمیل شد' : 'شروع',
-                style: TextStyle(
-                  fontSize: 12,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  locked
+                      ? Icons.lock_outline
+                      : completed
+                          ? Icons.check_circle_outline
+                          : Icons.play_circle_outline,
+                  size: 42,
                   color: locked ? Colors.grey : color,
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  'مرحله $stageId',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  locked ? 'قفل' : completed ? 'تکمیل شد' : 'شروع',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: locked ? Colors.grey : color,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
