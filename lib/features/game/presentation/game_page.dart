@@ -25,6 +25,8 @@ class _GamePageState extends State<GamePage> {
   List<int> _selectedIndexes = [];
   final Set<String> _foundWords = {};
   bool _completionHandled = false;
+  String? _feedbackWord;
+  bool? _feedbackSuccess;
   final Map<String, Set<int>> _revealedLetters = {};
   static const int _hintCost = 10;
 
@@ -99,7 +101,18 @@ class _GamePageState extends State<GamePage> {
     if (word.isEmpty) return;
 
     if (!_stage.words.contains(word)) {
+      setState(() {
+        _feedbackWord = word;
+        _feedbackSuccess = false;
+      });
       _showMessage('این کلمه در این مرحله وجود ندارد.');
+      Future.delayed(const Duration(milliseconds: 450), () {
+        if (!mounted) return;
+        setState(() {
+          _feedbackWord = null;
+          _feedbackSuccess = null;
+        });
+      });
       _clearSelection();
       return;
     }
@@ -113,6 +126,16 @@ class _GamePageState extends State<GamePage> {
     setState(() {
       _foundWords.add(word);
       _selectedIndexes = [];
+      _feedbackWord = word;
+      _feedbackSuccess = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 450), () {
+      if (!mounted) return;
+      setState(() {
+        _feedbackWord = null;
+        _feedbackSuccess = null;
+      });
     });
 
     _showMessage('آفرین! «$word» پیدا شد 🎉');
@@ -247,14 +270,26 @@ class _GamePageState extends State<GamePage> {
                       width: 1.5,
                     ),
                   ),
-                  child: Text(
-                    _currentWord.isEmpty ? 'حروف را لمس کن و بکش' : _currentWord,
-                    style: TextStyle(
-                      fontSize: 27,
-                      fontWeight: FontWeight.bold,
-                      color: _currentWord.isEmpty
-                          ? Colors.grey
-                          : Theme.of(context).colorScheme.primary,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 160),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: Text(
+                      _currentWord.isEmpty
+                          ? 'حروف را لمس کن و بکش'
+                          : _currentWord,
+                      key: ValueKey(_currentWord),
+                      style: TextStyle(
+                        fontSize: 27,
+                        fontWeight: FontWeight.bold,
+                        color: _feedbackWord == _currentWord
+                            ? (_feedbackSuccess == true
+                                ? Colors.green
+                                : Colors.red)
+                            : (_currentWord.isEmpty
+                                ? Colors.grey
+                                : Theme.of(context).colorScheme.primary),
+                      ),
                     ),
                   ),
                 ),
