@@ -119,7 +119,10 @@ class _GamePageState extends State<GamePage> {
 
     if (_foundWords.length == _stage.words.length && !_completionHandled) {
       _completionHandled = true;
-      await widget.progressController.completeStage(_stage.id);
+      await widget.progressController.completeStage(
+        _stage.id,
+        maxStageId: widget.repository.stages.last.id,
+      );
       Future.delayed(const Duration(milliseconds: 400), _showStageCompleted);
     }
   }
