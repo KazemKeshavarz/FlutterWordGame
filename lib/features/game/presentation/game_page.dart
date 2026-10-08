@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/local_stage_repository.dart';
 import '../domain/stage.dart';
+import 'widgets/letter_board.dart';
 
 class GamePage extends StatefulWidget {
   final int stageId;
@@ -13,7 +14,8 @@ class GamePage extends StatefulWidget {
 class _GamePageState extends State<GamePage> {
   final _repository = LocalStageRepository();
   late final Stage _stage;
-  final List<int> _selectedIndexes = [];
+
+  List<int> _selectedIndexes = [];
   final Set<String> _foundWords = {};
 
   @override
@@ -23,21 +25,27 @@ class _GamePageState extends State<GamePage> {
   }
 
   String get _currentWord =>
-      _selectedIndexes.map((index) => _stage.letters[index]).join();
+      _selectedIndexes.map((i) => _stage.letters[i]).join();
 
-  void _addLetter(int index) {
-    if (_selectedIndexes.contains(index)) return;
-    setState(() => _selectedIndexes.add(index));
+  void _onSelectionChanged(List<int> indexes) {
+    setState(() => _selectedIndexes = indexes);
+  }
+
+  void _onSelectionCompleted() {
+    _submitWord();
   }
 
   void _removeLastLetter() {
     if (_selectedIndexes.isEmpty) return;
-    setState(() => _selectedIndexes.removeLast());
+
+    setState(() {
+      _selectedIndexes = List<int>.from(_selectedIndexes)..removeLast();
+    });
   }
 
   void _clearSelection() {
     if (_selectedIndexes.isEmpty) return;
-    setState(() => _selectedIndexes.clear());
+    setState(() => _selectedIndexes = []);
   }
 
   void _submitWord() {
@@ -47,29 +55,38 @@ class _GamePageState extends State<GamePage> {
     if (_stage.words.contains(word)) {
       if (_foundWords.contains(word)) {
         _showMessage('این کلمه را قبلاً پیدا کرده‌ای.');
+        _clearSelection();
         return;
       }
 
       setState(() {
         _foundWords.add(word);
-        _selectedIndexes.clear();
+        _selectedIndexes = [];
       });
 
       _showMessage('آفرین! «' + word + '» پیدا شد 🎉');
 
       if (_foundWords.length == _stage.words.length) {
-        Future.delayed(const Duration(milliseconds: 350), _showStageCompleted);
+        Future.delayed(
+          const Duration(milliseconds: 400),
+          _showStageCompleted,
+        );
       }
     } else {
       _showMessage('این کلمه در این مرحله وجود ندارد.');
-      setState(() => _selectedIndexes.clear());
+      _clearSelection();
     }
   }
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   void _showStageCompleted() {
@@ -81,8 +98,9 @@ class _GamePageState extends State<GamePage> {
       builder: (context) => AlertDialog(
         title: const Text('مرحله کامل شد 🎉'),
         content: Text(
-          'تبریک! همه ' + _stage.words.length.toString() +
-          ' کلمه این مرحله را پیدا کردی.',
+          'تبریک! همه ' +
+              _stage.words.length.toString() +
+              ' کلمه این مرحله را پیدا کردی.',
         ),
         actions: [
           FilledButton(
@@ -109,9 +127,13 @@ class _GamePageState extends State<GamePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Center(
               child: Text(
-                _foundWords.length.toString() + '/' +
+                _foundWords.length.toString() +
+                    '/' +
                     _stage.words.length.toString(),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -136,6 +158,7 @@ class _GamePageState extends State<GamePage> {
                     alignment: WrapAlignment.center,
                     children: _stage.words.map((word) {
                       final found = _foundWords.contains(word);
+
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         width: word.length * 25.0 + 40,
@@ -143,18 +166,24 @@ class _GamePageState extends State<GamePage> {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
-                          color: found ? Colors.green.shade100 : Colors.white,
+                          color: found
+                              ? Colors.green.shade100
+                              : Colors.white,
                           border: Border.all(
                             color: found ? Colors.green : Colors.black12,
                             width: found ? 1.5 : 1,
                           ),
                         ),
                         child: Text(
-                          found ? word : List.filled(word.length, '•').join(' '),
+                          found
+                              ? word
+                              : List.filled(word.length, '•').join(' '),
                           style: TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.bold,
-                            color: found ? Colors.green.shade800 : Colors.grey,
+                            color: found
+                                ? Colors.green.shade800
+                                : Colors.grey,
                           ),
                         ),
                       );
@@ -163,7 +192,7 @@ class _GamePageState extends State<GamePage> {
                 ),
               ),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 150),
+                duration: const Duration(milliseconds: 120),
                 child: Container(
                   key: ValueKey(_currentWord),
                   width: double.infinity,
@@ -180,7 +209,9 @@ class _GamePageState extends State<GamePage> {
                     ),
                   ),
                   child: Text(
-                    _currentWord.isEmpty ? 'حروف را انتخاب کن' : _currentWord,
+                    _currentWord.isEmpty
+                        ? 'حروف را لمس کن و بکش'
+                        : _currentWord,
                     style: TextStyle(
                       fontSize: 27,
                       fontWeight: FontWeight.bold,
@@ -191,18 +222,12 @@ class _GamePageState extends State<GamePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                alignment: WrapAlignment.center,
-                children: List.generate(_stage.letters.length, (index) {
-                  return _LetterButton(
-                    letter: _stage.letters[index],
-                    selected: _selectedIndexes.contains(index),
-                    onTap: () => _addLetter(index),
-                  );
-                }),
+              const SizedBox(height: 20),
+              LetterBoard(
+                letters: _stage.letters,
+                selectedIndexes: _selectedIndexes.toSet(),
+                onSelectionChanged: _onSelectionChanged,
+                onSelectionCompleted: _onSelectionCompleted,
               ),
               const SizedBox(height: 18),
               Row(
@@ -210,59 +235,28 @@ class _GamePageState extends State<GamePage> {
                 children: [
                   IconButton.filledTonal(
                     tooltip: 'حذف آخرین حرف',
-                    onPressed: _selectedIndexes.isEmpty ? null : _removeLastLetter,
+                    onPressed: _selectedIndexes.isEmpty
+                        ? null
+                        : _removeLastLetter,
                     icon: const Icon(Icons.backspace_outlined),
                   ),
                   const SizedBox(width: 12),
                   FilledButton.icon(
-                    onPressed: _selectedIndexes.isEmpty ? null : _submitWord,
+                    onPressed:
+                        _selectedIndexes.isEmpty ? null : _submitWord,
                     icon: const Icon(Icons.check),
-                    label: const Text('ثبت کلمه'),
+                    label: const Text('ثبت'),
                   ),
                   const SizedBox(width: 12),
                   IconButton.filledTonal(
                     tooltip: 'پاک کردن',
-                    onPressed: _selectedIndexes.isEmpty ? null : _clearSelection,
+                    onPressed:
+                        _selectedIndexes.isEmpty ? null : _clearSelection,
                     icon: const Icon(Icons.clear),
                   ),
                 ],
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LetterButton extends StatelessWidget {
-  final String letter;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _LetterButton({
-    required this.letter,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: selected ? 0.92 : 1,
-      duration: const Duration(milliseconds: 100),
-      child: SizedBox(
-        width: 70,
-        height: 70,
-        child: ElevatedButton(
-          onPressed: selected ? null : onTap,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: EdgeInsets.zero,
-          ),
-          child: Text(
-            letter,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
         ),
       ),
