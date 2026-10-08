@@ -56,11 +56,19 @@ class _LetterBoardState extends State<LetterBoard> {
     _dragPosition = position;
 
     final index = _hitTest(position);
-    if (index != null && !widget.selectedIndexes.contains(index)) {
+    if (index != null &&
+        widget.selectedIndexes.length > 1 &&
+        index == widget.selectedIndexes[widget.selectedIndexes.length - 2]) {
+      widget.onSelectionChanged(
+        widget.selectedIndexes.sublist(0, widget.selectedIndexes.length - 1),
+      );
+      GameFeedback.letterSelected();
+    } else if (index != null && !widget.selectedIndexes.contains(index)) {
       widget.onSelectionChanged([
         ...widget.selectedIndexes,
         index,
       ]);
+      GameFeedback.letterSelected();
     }
 
     setState(() {});
