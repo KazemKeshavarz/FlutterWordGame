@@ -96,7 +96,6 @@ class _LetterBoardState extends State<LetterBoard> {
       ...widget.selectedIndexes,
       index,
     ]);
-    widget.onSelectionCompleted();
   }
 
   @override
