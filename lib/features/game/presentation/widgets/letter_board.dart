@@ -24,7 +24,6 @@ class _LetterBoardState extends State<LetterBoard> {
   final Map<int, Offset> _centers = {};
   int? _activeIndex;
   Offset? _dragPosition;
-  bool _isDragging = false;
 
   RenderBox? get _boardBox {
     final renderObject = _boardKey.currentContext?.findRenderObject();
@@ -46,7 +45,6 @@ class _LetterBoardState extends State<LetterBoard> {
 
     _activeIndex = index;
     _dragPosition = position;
-    _isDragging = true;
     widget.onSelectionChanged([index]);
     GameFeedback.letterSelected();
     setState(() {});
@@ -81,7 +79,6 @@ class _LetterBoardState extends State<LetterBoard> {
 
     _activeIndex = null;
     _dragPosition = null;
-    _isDragging = false;
     setState(() {});
     widget.onSelectionCompleted();
   }
