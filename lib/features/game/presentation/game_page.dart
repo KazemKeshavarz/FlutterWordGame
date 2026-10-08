@@ -29,6 +29,9 @@ class _GamePageState extends State<GamePage> {
   bool _completionHandled = false;
   String? _feedbackWord;
   bool? _feedbackSuccess;
+  int _combo = 0;
+  int _score = 0;
+  bool _showCelebration = false;
   final Map<String, Set<int>> _revealedLetters = {};
   static const int _hintCost = 10;
 
@@ -111,6 +114,7 @@ class _GamePageState extends State<GamePage> {
 
     if (!_isValidWord(word)) {
       setState(() {
+        _combo = 0;
         _feedbackWord = word;
         _feedbackSuccess = false;
       });
@@ -128,6 +132,7 @@ class _GamePageState extends State<GamePage> {
     }
 
     if (_foundWords.contains(word)) {
+      setState(() => _combo = 0);
       _showMessage('این کلمه را قبلاً پیدا کرده‌ای.');
       _clearSelection();
       return;
@@ -135,6 +140,8 @@ class _GamePageState extends State<GamePage> {
 
     setState(() {
       _foundWords.add(word);
+      _combo += 1;
+      _score += 10 + ((_combo - 1).clamp(0, 5) * 5);
       _selectedIndexes = [];
       _feedbackWord = word;
       _feedbackSuccess = true;
@@ -153,6 +160,7 @@ class _GamePageState extends State<GamePage> {
 
     if (_foundWords.length == _stage.words.length && !_completionHandled) {
       _completionHandled = true;
+      setState(() => _showCelebration = true);
       await widget.progressController.completeStage(
         _stage.id,
         maxStageId: widget.repository.stages.last.id,
@@ -223,7 +231,13 @@ class _GamePageState extends State<GamePage> {
                 minHeight: 7,
                 borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 14),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: _combo > 1
+                    ? Text('🔥 زنجیره $_combo', key: ValueKey(_combo), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))
+                    : const SizedBox(height: 20),
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Wrap(
@@ -341,7 +355,44 @@ class _GamePageState extends State<GamePage> {
                   ),
                 ],
               ),
-            ],
+              ],
+            ),
+            if (_showCelebration) const _StageCelebration(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StageCelebration extends StatelessWidget {
+  const _StageCelebration();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Container(
+          color: Colors.black12,
+          alignment: Alignment.center,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.5, end: 1),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.elasticOut,
+            builder: (context, scale, child) => Transform.scale(
+              scale: scale,
+              child: child,
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('🎉', style: TextStyle(fontSize: 82)),
+                SizedBox(height: 8),
+                Text('مرحله کامل شد!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                SizedBox(height: 6),
+                Text('آفرین قهرمان 🌟', style: TextStyle(fontSize: 17)),
+              ],
+            ),
           ),
         ),
       ),
