@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class LetterBoard extends StatefulWidget {
   final List<String> letters;
-  final Set<int> selectedIndexes;
+  final List<int> selectedIndexes;
   final ValueChanged<List<int>> onSelectionChanged;
   final VoidCallback onSelectionCompleted;
 
@@ -111,15 +111,16 @@ class _LetterBoardState extends State<LetterBoard> {
         onPanUpdate: (details) => _move(details.localPosition),
         onPanEnd: (_) => _end(),
         onPanCancel: _end,
-        child: SizedBox(
-          height: _boardHeight(),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SizedBox(
+          height: _boardHeight(constraints.maxWidth),
           child: Stack(
             children: [
               CustomPaint(
                 size: Size.infinite,
                 painter: _SelectionPathPainter(
                   centers: _centers,
-                  selectedIndexes: widget.selectedIndexes.toList(),
+                  selectedIndexes: widget.selectedIndexes,
                   dragPosition: _activeIndex == null ? null : _dragPosition,
                   color: color,
                 ),
@@ -136,15 +137,15 @@ class _LetterBoardState extends State<LetterBoard> {
             ],
           ),
         ),
+        ),
       ),
     );
   }
 
-  double _boardHeight() {
+  double _boardHeight(double width) {
     const itemSize = 72.0;
     const spacing = 16.0;
-    const maxWidth = 360.0;
-    final columns = (maxWidth / (itemSize + spacing)).floor().clamp(1, 4);
+    final columns = ((width + spacing) / (itemSize + spacing)).floor().clamp(1, 5);
     final rows = (widget.letters.length / columns).ceil();
     return rows * itemSize + (rows - 1) * spacing + 16;
   }
@@ -208,14 +209,14 @@ class _SelectionPathPainter extends CustomPainter {
     if (selectedIndexes.isEmpty) return;
 
     final linePaint = Paint()
-      ..color = color.withValues(alpha: 0.55)
+      ..color = color.withOpacity(0.55)
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     final dotPaint = Paint()
-      ..color = color.withValues(alpha: 0.85)
+      ..color = color.withOpacity(0.85)
       ..style = PaintingStyle.fill;
 
     final points = selectedIndexes
