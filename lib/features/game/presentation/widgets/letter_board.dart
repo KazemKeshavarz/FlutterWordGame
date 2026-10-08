@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/audio/game_feedback.dart';
 
 class LetterBoard extends StatefulWidget {
   final List<String> letters;
@@ -45,6 +46,7 @@ class _LetterBoardState extends State<LetterBoard> {
     _activeIndex = index;
     _dragPosition = position;
     widget.onSelectionChanged([index]);
+    GameFeedback.letterSelected();
     setState(() {});
   }
 
@@ -96,6 +98,7 @@ class _LetterBoardState extends State<LetterBoard> {
       ...widget.selectedIndexes,
       index,
     ]);
+    GameFeedback.letterSelected();
   }
 
   @override
@@ -161,9 +164,24 @@ class _LetterBoardState extends State<LetterBoard> {
           width: 72,
           height: 72,
           child: AnimatedScale(
-            scale: selected ? 0.9 : 1,
-            duration: const Duration(milliseconds: 100),
-            child: ElevatedButton(
+            scale: selected ? 0.88 : 1,
+            duration: const Duration(milliseconds: 130),
+            curve: Curves.easeOutBack,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 130),
+              curve: Curves.easeOut,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(selected ? 0.28 : 0.12),
+                    blurRadius: selected ? 18 : 8,
+                    spreadRadius: selected ? 2 : 0,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
               onPressed: () => _selectByTap(index),
               style: ElevatedButton.styleFrom(
                 shape: const CircleBorder(),
@@ -176,12 +194,16 @@ class _LetterBoardState extends State<LetterBoard> {
                     ? Theme.of(context).colorScheme.onPrimaryContainer
                     : null,
               ),
-              child: Text(
-                widget.letters[index],
-                style: const TextStyle(
-                  fontSize: 29,
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 120),
+                style: TextStyle(
+                  fontSize: selected ? 32 : 29,
                   fontWeight: FontWeight.bold,
                 ),
+                child: Text(
+                  widget.letters[index],
+                ),
+              ),
               ),
             ),
           ),
