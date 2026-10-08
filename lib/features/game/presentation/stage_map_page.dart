@@ -46,6 +46,7 @@ class StageMapPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
+              mainAxisExtent: 125,
               crossAxisSpacing: 14,
               mainAxisSpacing: 14,
               childAspectRatio: 0.95,
@@ -57,6 +58,7 @@ class StageMapPage extends StatelessWidget {
               final completed = progress.completedStages.contains(stage.id);
 
               return _StageTile(
+                key: ValueKey('stage-${stage.id}-$completed-$locked'),
                 stageId: stage.id,
                 locked: locked,
                 completed: completed,
@@ -98,8 +100,23 @@ class _StageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = completed ? Colors.green : AppTheme.primary;
 
-    return Material(
-      color: Colors.white,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: locked
+            ? const []
+            : [
+                BoxShadow(
+                  color: color.withOpacity(0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
         onTap: onTap,
@@ -143,6 +160,7 @@ class _StageTile extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }
