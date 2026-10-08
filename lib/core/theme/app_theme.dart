@@ -7,8 +7,11 @@ class AppTheme {
 
   static ThemeData get light => ThemeData(
         useMaterial3: true,
-        fontFamily: 'Vazirmatn',
         scaffoldBackgroundColor: background,
+        cardTheme: const CardThemeData(
+          elevation: 0,
+          margin: EdgeInsets.zero,
+        ),
         colorScheme: ColorScheme.fromSeed(seedColor: primary),
         appBarTheme: const AppBarTheme(
           backgroundColor: dark,
