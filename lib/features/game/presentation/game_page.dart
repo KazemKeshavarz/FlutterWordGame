@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/audio/game_feedback.dart';
+import '../../../core/utils/persian_text_normalizer.dart';
 import '../data/local_stage_repository.dart';
 import '../domain/stage.dart';
 import '../../../core/storage/game_progress_controller.dart';
@@ -38,6 +40,13 @@ class _GamePageState extends State<GamePage> {
 
   String get _currentWord =>
       _selectedIndexes.map((i) => _stage.letters[i]).join();
+
+  bool _isValidWord(String word) {
+    final normalized = PersianTextNormalizer.normalize(word);
+    return _stage.words.any(
+      (item) => PersianTextNormalizer.normalize(item) == normalized,
+    );
+  }
 
   void _onSelectionChanged(List<int> indexes) {
     setState(() => _selectedIndexes = indexes);
@@ -100,11 +109,12 @@ class _GamePageState extends State<GamePage> {
     final word = _currentWord;
     if (word.isEmpty) return;
 
-    if (!_stage.words.contains(word)) {
+    if (!_isValidWord(word)) {
       setState(() {
         _feedbackWord = word;
         _feedbackSuccess = false;
       });
+      await GameFeedback.wrong();
       _showMessage('این کلمه در این مرحله وجود ندارد.');
       Future.delayed(const Duration(milliseconds: 450), () {
         if (!mounted) return;
@@ -138,6 +148,7 @@ class _GamePageState extends State<GamePage> {
       });
     });
 
+    await GameFeedback.correct();
     _showMessage('آفرین! «$word» پیدا شد 🎉');
 
     if (_foundWords.length == _stage.words.length && !_completionHandled) {
