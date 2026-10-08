@@ -138,12 +138,13 @@ class _GamePageState extends State<GamePage> {
       return;
     }
 
+    final nextCombo = _combo + 1;
+    final comboBonus = (nextCombo > 6 ? 5 : nextCombo - 1) * 5;
+
     setState(() {
       _foundWords.add(word);
-      _combo += 1;
-      final comboIndex = _combo < 6 ? _combo : 6;
-    final comboBonus = (comboIndex - 1) * 5;
-    _score += 10 + comboBonus;
+      _combo = nextCombo;
+      _score += 10 + comboBonus;
       _selectedIndexes = [];
       _feedbackWord = word;
       _feedbackSuccess = true;
