@@ -17,16 +17,18 @@ class GameProgressController extends ChangeNotifier {
 
   GameProgress get progress => _progress;
 
-  Future<void> completeStage(int stageId, {int reward = 20}) async {
+  Future<void> completeStage(int stageId, {int reward = 20, int? maxStageId}) async {
     if (_progress.completedStages.contains(stageId)) return;
 
     final completed = Set<int>.from(_progress.completedStages)..add(stageId);
     final nextStage = stageId + 1;
+    final desiredUnlockedStage =
+        maxStageId != null && nextStage > maxStageId ? maxStageId : nextStage;
 
     _progress = _progress.copyWith(
       coins: _progress.coins + reward,
-      unlockedStage: nextStage > _progress.unlockedStage
-          ? nextStage
+      unlockedStage: desiredUnlockedStage > _progress.unlockedStage
+          ? desiredUnlockedStage
           : _progress.unlockedStage,
       completedStages: completed,
     );
