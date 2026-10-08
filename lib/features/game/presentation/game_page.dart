@@ -166,9 +166,16 @@ class _GamePageState extends State<GamePage> {
       await widget.progressController.completeStage(
         _stage.id,
         maxStageId: widget.repository.stages.last.id,
+        stars: _stageStars,
       );
       Future.delayed(const Duration(milliseconds: 900), _showStageCompleted);
     }
+  }
+
+  int get _stageStars {
+    if (_score >= _stage.words.length * 15) return 3;
+    if (_score >= _stage.words.length * 10) return 2;
+    return 1;
   }
 
   void _showMessage(String message) {
@@ -188,7 +195,7 @@ class _GamePageState extends State<GamePage> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('مرحله کامل شد 🎉'),
-        content: const Text('۲۰ سکه جایزه گرفتی و مرحله بعدی باز شد.'),
+        content: Text('$_score امتیاز گرفتی و ۲۰ سکه جایزه گرفتی.\n\n${'⭐' * _stageStars}  رکورد این مرحله'),
         actions: [
           FilledButton(
             onPressed: () {
