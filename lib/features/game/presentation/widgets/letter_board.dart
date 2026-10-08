@@ -19,8 +19,14 @@ class LetterBoard extends StatefulWidget {
 }
 
 class _LetterBoardState extends State<LetterBoard> {
+  final GlobalKey _boardKey = GlobalKey();
   final Map<int, Offset> _centers = {};
   int? _activeIndex;
+
+  RenderBox? get _boardBox {
+    final renderObject = _boardKey.currentContext?.findRenderObject();
+    return renderObject is RenderBox ? renderObject : null;
+  }
 
   int? _hitTest(Offset position) {
     for (final entry in _centers.entries) {
@@ -57,86 +63,87 @@ class _LetterBoardState extends State<LetterBoard> {
     widget.onSelectionCompleted();
   }
 
+  void _cacheCenter(int index, BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final box = context.findRenderObject();
+      final board = _boardBox;
+
+      if (box is! RenderBox || board == null) return;
+
+      final globalCenter = box.localToGlobal(
+        box.size.center(Offset.zero),
+      );
+      _centers[index] = board.globalToLocal(globalCenter);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (details) => _start(details.localPosition),
-          onPanUpdate: (details) => _move(details.localPosition),
-          onPanEnd: (_) => _end(),
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: List.generate(widget.letters.length, (index) {
-              return _buildLetter(index);
-            }),
+    return Container(
+      key: _boardKey,
+      padding: const EdgeInsets.all(4),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (details) => _start(details.localPosition),
+        onPanUpdate: (details) => _move(details.localPosition),
+        onPanEnd: (_) => _end(),
+        onPanCancel: _end,
+        child: Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          alignment: WrapAlignment.center,
+          children: List.generate(
+            widget.letters.length,
+            (index) => _buildLetter(index),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildLetter(int index) {
     return Builder(
       builder: (context) {
-        return SizedBox(
-          width: 72,
-          height: 72,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                final box = context.findRenderObject() as RenderBox?;
-                if (box == null) return;
-                final position = box.localToGlobal(
-                  Offset(constraints.maxWidth / 2, constraints.maxHeight / 2),
-                );
+        _cacheCenter(index, context);
 
-                final boardBox =
-                    context.findAncestorRenderObjectOfType<RenderBox>();
-                if (boardBox != null) {
-                  _centers[index] = boardBox.globalToLocal(position);
-                }
-              });
+        final selected = widget.selectedIndexes.contains(index);
 
-              final selected = widget.selectedIndexes.contains(index);
-
-              return AnimatedScale(
-                scale: selected ? 0.9 : 1,
-                duration: const Duration(milliseconds: 100),
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (selected) return;
-                    widget.onSelectionChanged([
-                      ...widget.selectedIndexes,
-                      index,
-                    ]);
-                    widget.onSelectionCompleted();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                    padding: EdgeInsets.zero,
-                    elevation: selected ? 2 : 5,
-                    backgroundColor: selected
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : null,
-                    foregroundColor: selected
-                        ? Theme.of(context).colorScheme.onPrimaryContainer
-                        : null,
-                  ),
-                  child: Text(
-                    widget.letters[index],
-                    style: const TextStyle(
-                      fontSize: 29,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+        return AnimatedScale(
+          scale: selected ? 0.9 : 1,
+          duration: const Duration(milliseconds: 100),
+          child: SizedBox(
+            width: 72,
+            height: 72,
+            child: ElevatedButton(
+              onPressed: () {
+                if (selected) return;
+                widget.onSelectionChanged([
+                  ...widget.selectedIndexes,
+                  index,
+                ]);
+                widget.onSelectionCompleted();
+              },
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: EdgeInsets.zero,
+                elevation: selected ? 2 : 5,
+                backgroundColor: selected
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : null,
+                foregroundColor: selected
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : null,
+              ),
+              child: Text(
+                widget.letters[index],
+                style: const TextStyle(
+                  fontSize: 29,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            },
+              ),
+            ),
           ),
         );
       },
