@@ -262,7 +262,7 @@ class _GamePageState extends State<GamePage> {
               const SizedBox(height: 20),
               LetterBoard(
                 letters: _stage.letters,
-                selectedIndexes: _selectedIndexes.toSet(),
+                selectedIndexes: _selectedIndexes,
                 onSelectionChanged: _onSelectionChanged,
                 onSelectionCompleted: _onSelectionCompleted,
               ),
