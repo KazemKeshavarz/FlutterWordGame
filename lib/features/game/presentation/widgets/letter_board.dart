@@ -113,8 +113,8 @@ class _LetterBoardState extends State<LetterBoard> {
         onPanCancel: _end,
         child: LayoutBuilder(
           builder: (context, constraints) => SizedBox(
-          height: _boardHeight(constraints.maxWidth),
-          child: Stack(
+            height: _boardHeight(constraints.maxWidth),
+            child: Stack(
             children: [
               CustomPaint(
                 size: Size.infinite,
@@ -135,8 +135,8 @@ class _LetterBoardState extends State<LetterBoard> {
                 ),
               ),
             ],
+            ),
           ),
-        ),
         ),
       ),
     );
