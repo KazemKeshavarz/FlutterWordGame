@@ -24,6 +24,7 @@ class _LetterBoardState extends State<LetterBoard> {
   final Map<int, Offset> _centers = {};
   int? _activeIndex;
   Offset? _dragPosition;
+  bool _isDragging = false;
 
   RenderBox? get _boardBox {
     final renderObject = _boardKey.currentContext?.findRenderObject();
@@ -45,6 +46,7 @@ class _LetterBoardState extends State<LetterBoard> {
 
     _activeIndex = index;
     _dragPosition = position;
+    _isDragging = true;
     widget.onSelectionChanged([index]);
     GameFeedback.letterSelected();
     setState(() {});
@@ -79,6 +81,7 @@ class _LetterBoardState extends State<LetterBoard> {
 
     _activeIndex = null;
     _dragPosition = null;
+    _isDragging = false;
     setState(() {});
     widget.onSelectionCompleted();
   }
@@ -181,6 +184,16 @@ class _LetterBoardState extends State<LetterBoard> {
               curve: Curves.easeOut,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
+                gradient: selected
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withOpacity(0.20),
+                          color.withOpacity(0.05),
+                        ],
+                      )
+                    : null,
                 boxShadow: [
                   BoxShadow(
                     color: color.withOpacity(selected ? 0.28 : 0.12),
@@ -195,7 +208,8 @@ class _LetterBoardState extends State<LetterBoard> {
               style: ElevatedButton.styleFrom(
                 shape: const CircleBorder(),
                 padding: EdgeInsets.zero,
-                elevation: selected ? 2 : 5,
+                elevation: selected ? 1 : 5,
+                animationDuration: const Duration(milliseconds: 120),
                 backgroundColor: selected
                     ? Theme.of(context).colorScheme.primaryContainer
                     : null,
