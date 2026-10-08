@@ -5,6 +5,7 @@ import '../data/local_stage_repository.dart';
 import '../domain/stage.dart';
 import '../../../core/storage/game_progress_controller.dart';
 import 'widgets/letter_board.dart';
+import 'widgets/word_success_effect.dart';
 
 class GamePage extends StatefulWidget {
   final int stageId;
@@ -32,6 +33,8 @@ class _GamePageState extends State<GamePage> {
   int _combo = 0;
   int _score = 0;
   bool _showCelebration = false;
+  String? _successEffectWord;
+  int _successEffectCombo = 0;
   final Map<String, Set<int>> _revealedLetters = {};
   static const int _hintCost = 10;
 
@@ -148,6 +151,13 @@ class _GamePageState extends State<GamePage> {
       _selectedIndexes = [];
       _feedbackWord = word;
       _feedbackSuccess = true;
+      _successEffectWord = word;
+      _successEffectCombo = nextCombo;
+    });
+
+    Future.delayed(const Duration(milliseconds: 720), () {
+      if (!mounted || _successEffectWord != word) return;
+      setState(() => _successEffectWord = null);
     });
 
     Future.delayed(const Duration(milliseconds: 450), () {
@@ -369,6 +379,12 @@ class _GamePageState extends State<GamePage> {
               ),
               ],
             ),
+            if (_successEffectWord != null)
+              WordSuccessEffect(
+                key: ValueKey('success-$_successEffectWord-$_successEffectCombo'),
+                word: _successEffectWord!,
+                combo: _successEffectCombo,
+              ),
             if (_showCelebration) const _StageCelebration(),
           ],
         ),
