@@ -159,6 +159,7 @@ class _LetterBoardState extends State<LetterBoard> {
         _cacheCenter(index, context);
 
         final selected = widget.selectedIndexes.contains(index);
+        final color = Theme.of(context).colorScheme.primary;
 
         return SizedBox(
           width: 72,
