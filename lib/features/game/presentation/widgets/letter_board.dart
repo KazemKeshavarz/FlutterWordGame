@@ -22,6 +22,7 @@ class _LetterBoardState extends State<LetterBoard> {
   final GlobalKey _boardKey = GlobalKey();
   final Map<int, Offset> _centers = {};
   int? _activeIndex;
+  Offset? _dragPosition;
 
   RenderBox? get _boardBox {
     final renderObject = _boardKey.currentContext?.findRenderObject();
@@ -42,24 +43,33 @@ class _LetterBoardState extends State<LetterBoard> {
     if (index == null) return;
 
     _activeIndex = index;
+    _dragPosition = position;
     widget.onSelectionChanged([index]);
+    setState(() {});
   }
 
   void _move(Offset position) {
     if (_activeIndex == null) return;
 
-    final index = _hitTest(position);
-    if (index == null || widget.selectedIndexes.contains(index)) return;
+    _dragPosition = position;
 
-    widget.onSelectionChanged([
-      ...widget.selectedIndexes,
-      index,
-    ]);
+    final index = _hitTest(position);
+    if (index != null && !widget.selectedIndexes.contains(index)) {
+      widget.onSelectionChanged([
+        ...widget.selectedIndexes,
+        index,
+      ]);
+    }
+
+    setState(() {});
   }
 
   void _end() {
     if (_activeIndex == null) return;
+
     _activeIndex = null;
+    _dragPosition = null;
+    setState(() {});
     widget.onSelectionCompleted();
   }
 
@@ -79,28 +89,65 @@ class _LetterBoardState extends State<LetterBoard> {
     });
   }
 
+  void _selectByTap(int index) {
+    if (widget.selectedIndexes.contains(index)) return;
+
+    widget.onSelectionChanged([
+      ...widget.selectedIndexes,
+      index,
+    ]);
+    widget.onSelectionCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+
     return Container(
       key: _boardKey,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(8),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onPanStart: (details) => _start(details.localPosition),
         onPanUpdate: (details) => _move(details.localPosition),
         onPanEnd: (_) => _end(),
         onPanCancel: _end,
-        child: Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          alignment: WrapAlignment.center,
-          children: List.generate(
-            widget.letters.length,
-            (index) => _buildLetter(index),
+        child: SizedBox(
+          height: _boardHeight(),
+          child: Stack(
+            children: [
+              CustomPaint(
+                size: Size.infinite,
+                painter: _SelectionPathPainter(
+                  centers: _centers,
+                  selectedIndexes: widget.selectedIndexes.toList(),
+                  dragPosition: _activeIndex == null ? null : _dragPosition,
+                  color: color,
+                ),
+              ),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: List.generate(
+                  widget.letters.length,
+                  (index) => _buildLetter(index),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  double _boardHeight() {
+    const itemSize = 72.0;
+    const spacing = 16.0;
+    const maxWidth = 360.0;
+    final columns = (maxWidth / (itemSize + spacing)).floor().clamp(1, 4);
+    final rows = (widget.letters.length / columns).ceil();
+    return rows * itemSize + (rows - 1) * spacing + 16;
   }
 
   Widget _buildLetter(int index) {
@@ -110,21 +157,14 @@ class _LetterBoardState extends State<LetterBoard> {
 
         final selected = widget.selectedIndexes.contains(index);
 
-        return AnimatedScale(
-          scale: selected ? 0.9 : 1,
-          duration: const Duration(milliseconds: 100),
-          child: SizedBox(
-            width: 72,
-            height: 72,
+        return SizedBox(
+          width: 72,
+          height: 72,
+          child: AnimatedScale(
+            scale: selected ? 0.9 : 1,
+            duration: const Duration(milliseconds: 100),
             child: ElevatedButton(
-              onPressed: () {
-                if (selected) return;
-                widget.onSelectionChanged([
-                  ...widget.selectedIndexes,
-                  index,
-                ]);
-                widget.onSelectionCompleted();
-              },
+              onPressed: () => _selectByTap(index),
               style: ElevatedButton.styleFrom(
                 shape: const CircleBorder(),
                 padding: EdgeInsets.zero,
@@ -148,5 +188,65 @@ class _LetterBoardState extends State<LetterBoard> {
         );
       },
     );
+  }
+}
+
+class _SelectionPathPainter extends CustomPainter {
+  final Map<int, Offset> centers;
+  final List<int> selectedIndexes;
+  final Offset? dragPosition;
+  final Color color;
+
+  const _SelectionPathPainter({
+    required this.centers,
+    required this.selectedIndexes,
+    required this.dragPosition,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (selectedIndexes.isEmpty) return;
+
+    final linePaint = Paint()
+      ..color = color.withValues(alpha: 0.55)
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final dotPaint = Paint()
+      ..color = color.withValues(alpha: 0.85)
+      ..style = PaintingStyle.fill;
+
+    final points = selectedIndexes
+        .map((index) => centers[index])
+        .whereType<Offset>()
+        .toList();
+
+    if (points.isEmpty) return;
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+
+    for (var i = 1; i < points.length; i++) {
+      path.lineTo(points[i].dx, points[i].dy);
+    }
+
+    if (dragPosition != null) {
+      path.lineTo(dragPosition!.dx, dragPosition!.dy);
+    }
+
+    canvas.drawPath(path, linePaint);
+
+    for (final point in points) {
+      canvas.drawCircle(point, 7, dotPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SelectionPathPainter oldDelegate) {
+    return oldDelegate.selectedIndexes != selectedIndexes ||
+        oldDelegate.dragPosition != dragPosition ||
+        oldDelegate.color != color;
   }
 }
