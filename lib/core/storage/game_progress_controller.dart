@@ -23,8 +23,7 @@ class GameProgressController extends ChangeNotifier {
     int? maxStageId,
     int stars = 3,
   }) async {
-    if (_progress.completedStages.contains(stageId)) return;
-
+    final alreadyCompleted = _progress.completedStages.contains(stageId);
     final completed = Set<int>.from(_progress.completedStages)..add(stageId);
     final previousStars = _progress.stageStars[stageId] ?? 0;
     final updatedStars = Map<int, int>.from(_progress.stageStars)
@@ -34,7 +33,7 @@ class GameProgressController extends ChangeNotifier {
         maxStageId != null && nextStage > maxStageId ? maxStageId : nextStage;
 
     _progress = _progress.copyWith(
-      coins: _progress.coins + reward,
+      coins: alreadyCompleted ? _progress.coins : _progress.coins + reward,
       unlockedStage: desiredUnlockedStage > _progress.unlockedStage
           ? desiredUnlockedStage
           : _progress.unlockedStage,
