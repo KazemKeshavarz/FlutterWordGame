@@ -25,6 +25,8 @@ class _GamePageState extends State<GamePage> {
   List<int> _selectedIndexes = [];
   final Set<String> _foundWords = {};
   bool _completionHandled = false;
+  final Map<String, Set<int>> _revealedLetters = {};
+  static const int _hintCost = 10;
 
   @override
   void initState() {
@@ -51,6 +53,45 @@ class _GamePageState extends State<GamePage> {
   void _clearSelection() {
     if (_selectedIndexes.isEmpty) return;
     setState(() => _selectedIndexes = []);
+  }
+
+  Future<void> _useHint() async {
+    String? targetWord;
+    int? targetIndex;
+
+    for (final word in _stage.words) {
+      if (_foundWords.contains(word)) continue;
+
+      final revealed = _revealedLetters[word] ?? <int>{};
+      for (var i = 0; i < word.length; i++) {
+        if (!revealed.contains(i)) {
+          targetWord = word;
+          targetIndex = i;
+          break;
+        }
+      }
+
+      if (targetWord != null) break;
+    }
+
+    if (targetWord == null || targetIndex == null) {
+      _showMessage('همه کلمه‌ها پیدا شده‌اند.');
+      return;
+    }
+
+    final success = await widget.progressController.spendCoins(_hintCost);
+    if (!success) {
+      _showMessage('برای استفاده از راهنما حداقل $_hintCost سکه لازم است.');
+      return;
+    }
+
+    setState(() {
+      final revealed = Set<int>.from(_revealedLetters[targetWord!] ?? const {});
+      revealed.add(targetIndex!);
+      _revealedLetters[targetWord!] = revealed;
+    });
+
+    _showMessage('یک حرف از «$targetWord» با $_hintCost سکه نمایش داده شد.');
   }
 
   Future<void> _submitWord() async {
@@ -154,6 +195,11 @@ class _GamePageState extends State<GamePage> {
                     alignment: WrapAlignment.center,
                     children: _stage.words.map((word) {
                       final found = _foundWords.contains(word);
+                      final revealed = _revealedLetters[word] ?? const <int>{};
+                      final maskedWord = List.generate(
+                        word.length,
+                        (index) => revealed.contains(index) ? word[index] : '•',
+                      ).join(' ');
 
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
@@ -169,7 +215,7 @@ class _GamePageState extends State<GamePage> {
                           ),
                         ),
                         child: Text(
-                          found ? word : List.filled(word.length, '•').join(' '),
+                          found ? word : maskedWord,
                           style: TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.bold,
@@ -231,6 +277,12 @@ class _GamePageState extends State<GamePage> {
                     onPressed: _selectedIndexes.isEmpty ? null : _submitWord,
                     icon: const Icon(Icons.check),
                     label: const Text('ثبت'),
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton.filledTonal(
+                    tooltip: 'راهنما - $_hintCost سکه',
+                    onPressed: _completionHandled ? null : _useHint,
+                    icon: const Icon(Icons.lightbulb_outline),
                   ),
                   const SizedBox(width: 12),
                   IconButton.filledTonal(
