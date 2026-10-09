@@ -33,6 +33,7 @@ class _GamePageState extends State<GamePage> {
   int _combo = 0;
   int _score = 0;
   bool _showCelebration = false;
+  bool _rewardEarned = false;
   String? _successEffectWord;
   int _successEffectCombo = 0;
   final Map<String, Set<int>> _revealedLetters = {};
@@ -183,6 +184,8 @@ class _GamePageState extends State<GamePage> {
         maxStageId: widget.repository.stages.last.id,
         stars: _stageStars,
       );
+      if (!mounted) return;
+      setState(() => _rewardEarned = rewardEarned);
       Future.delayed(
         const Duration(milliseconds: 900),
         () => _showStageCompleted(rewardEarned: rewardEarned),
@@ -396,7 +399,8 @@ class _GamePageState extends State<GamePage> {
                 word: _successEffectWord!,
                 combo: _successEffectCombo,
               ),
-            if (_showCelebration) const _StageCelebration(),
+            if (_showCelebration)
+              _StageCelebration(rewardEarned: _rewardEarned),
           ],
         ),
       ),
@@ -405,32 +409,87 @@ class _GamePageState extends State<GamePage> {
 }
 
 class _StageCelebration extends StatelessWidget {
-  const _StageCelebration();
+  final bool rewardEarned;
+
+  const _StageCelebration({required this.rewardEarned});
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return Positioned.fill(
       child: IgnorePointer(
         child: Container(
-          color: Colors.black12,
+          color: Colors.black26,
           alignment: Alignment.center,
           child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.5, end: 1),
-            duration: const Duration(milliseconds: 600),
+            tween: Tween(begin: 0.65, end: 1),
+            duration: const Duration(milliseconds: 650),
             curve: Curves.elasticOut,
             builder: (context, scale, child) => Transform.scale(
               scale: scale,
               child: child,
             ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('🎉', style: TextStyle(fontSize: 82)),
-                SizedBox(height: 8),
-                Text('مرحله کامل شد!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                SizedBox(height: 6),
-                Text('آفرین قهرمان 🌟', style: TextStyle(fontSize: 17)),
-              ],
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 28),
+              padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black26, blurRadius: 24, offset: Offset(0, 12)),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🎉', style: TextStyle(fontSize: 76)),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'مرحله کامل شد!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('آفرین قهرمان 🌟', style: TextStyle(fontSize: 17)),
+                  if (rewardEarned) ...[
+                    const SizedBox(height: 20),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 850),
+                      curve: Curves.easeOutBack,
+                      builder: (context, value, child) => Transform.scale(
+                        scale: value,
+                        child: Opacity(opacity: value.clamp(0, 1), child: child),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF4CC),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: const Color(0xFFFFD76A)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🪙', style: TextStyle(fontSize: 27)),
+                            const SizedBox(width: 9),
+                            Text(
+                              '+20 سکه',
+                              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, color: primary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'رکورد مرحله‌ات بهتر شد!',
+                      style: TextStyle(color: primary, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),
