@@ -60,6 +60,7 @@ class StageMapPage extends StatelessWidget {
                 final stage = repository.stages[index];
                 final locked = stage.id > progress.unlockedStage;
                 final completed = progress.completedStages.contains(stage.id);
+                final isNext = stage.id == progress.unlockedStage && !completed;
                 final stars = progress.starsFor(stage.id);
                 final side = index.isEven ? Alignment.centerRight : Alignment.centerLeft;
 
@@ -68,6 +69,7 @@ class StageMapPage extends StatelessWidget {
                   stars: stars,
                   locked: locked,
                   completed: completed,
+                  isNext: isNext,
                   side: side,
                   showConnector: index < repository.stages.length - 1,
                   onTap: locked
@@ -97,6 +99,7 @@ class _MapStage extends StatelessWidget {
   final int stars;
   final bool locked;
   final bool completed;
+  final bool isNext;
   final Alignment side;
   final bool showConnector;
   final VoidCallback? onTap;
@@ -106,6 +109,7 @@ class _MapStage extends StatelessWidget {
     required this.stars,
     required this.locked,
     required this.completed,
+    required this.isNext,
     required this.side,
     required this.showConnector,
     required this.onTap,
@@ -152,15 +156,15 @@ class _MapStage extends StatelessWidget {
                     color: locked ? Colors.grey.shade200 : Colors.white,
                     border: Border.all(
                       color: locked ? Colors.grey.shade400 : activeColor,
-                      width: 4,
+                      width: isNext ? 5 : 4,
                     ),
                     boxShadow: locked
                         ? const []
                         : [
                             BoxShadow(
-                              color: activeColor.withOpacity(0.20),
-                              blurRadius: 18,
-                              spreadRadius: 2,
+                              color: activeColor.withOpacity(isNext ? 0.32 : 0.20),
+                              blurRadius: isNext ? 24 : 18,
+                              spreadRadius: isNext ? 4 : 2,
                             ),
                           ],
                   ),
@@ -187,7 +191,7 @@ class _MapStage extends StatelessWidget {
                       ),
                       if (!locked)
                         Text(
-                          stars == 0 ? 'شروع' : '⭐' * stars,
+                          isNext ? 'مرحله بعدی' : stars == 0 ? 'شروع' : '⭐' * stars,
                           style: const TextStyle(fontSize: 11),
                         ),
                     ],
