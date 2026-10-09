@@ -23,7 +23,7 @@ class HomePage extends StatelessWidget {
         final progress = progressController.progress;
         final totalStages = stageRepository.stages.length;
         final completedCount = progress.completedStages.length;
-        final unlockedStage = progress.unlockedStage.clamp(1, totalStages);
+        final unlockedStage = totalStages == 0 ? 1 : progress.unlockedStage.clamp(1, totalStages).toInt();
         final totalStars = progress.stageStars.values.fold<int>(0, (sum, stars) => sum + stars);
 
         return Scaffold(
