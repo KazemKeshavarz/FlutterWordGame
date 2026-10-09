@@ -39,14 +39,21 @@ void main() {
       expect(errors.single, contains('تکراری'));
     });
 
-    test('rejects empty stages and empty words', () {
-      const stage = Stage(id: 4, letters: [], words: ['']);
+    test('rejects an empty stage', () {
+      const stage = Stage(id: 4, letters: [], words: []);
 
       final errors = StageValidator.validate(stage);
       expect(errors, hasLength(2));
       expect(errors.join(' '), contains('هیچ حرفی ندارد'));
       expect(errors.join(' '), contains('هیچ کلمه‌ای ندارد'));
-      expect(errors.join(' '), contains('کلمه خالی است'));
+    });
+
+    test('rejects empty words', () {
+      const stage = Stage(id: 5, letters: ['ا'], words: ['']);
+
+      final errors = StageValidator.validate(stage);
+      expect(errors, hasLength(1));
+      expect(errors.single, contains('کلمه خالی است'));
     });
   });
 }
