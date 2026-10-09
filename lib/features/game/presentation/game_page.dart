@@ -213,7 +213,11 @@ class _GamePageState extends State<GamePage> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('مرحله کامل شد 🎉'),
-        content: Text('$_score امتیاز گرفتی و ۲۰ سکه جایزه گرفتی.\n\n${'⭐' * _stageStars}  رکورد این مرحله'),
+        content: Text(
+          rewardEarned
+              ? '$_score امتیاز گرفتی و ۲۰ سکه جایزه گرفتی.\\n\\n${'⭐' * _stageStars} ستاره'
+              : '$_score امتیاز گرفتی. این مرحله را دوباره با موفقیت تمام کردی!\\n\\n${'⭐' * _stageStars} ستاره',
+        ),
         actions: [
           FilledButton(
             onPressed: () {
