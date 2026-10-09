@@ -101,6 +101,7 @@ class _GamePageState extends State<GamePage> {
     }
 
     final success = await widget.progressController.spendCoins(_hintCost);
+    if (!mounted) return;
     if (!success) {
       _showMessage('برای استفاده از راهنما حداقل $_hintCost سکه لازم است.');
       return;
