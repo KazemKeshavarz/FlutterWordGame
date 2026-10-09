@@ -11,7 +11,7 @@
 - امکان برگشت روی حرف قبلی هنگام Drag
 - ثبت دستی و خودکار کلمه
 - تشخیص کلمات صحیح و غلط
-- Haptic Feedback و صدای سیستمی
+- بازخورد لمسی و افکت‌های صوتی اختصاصی WAV برای انتخاب حرف، پاسخ درست/غلط، راهنما و پایان مرحله
 - سیستم سکه و Hint
 - ذخیره دائمی پیشرفت با SharedPreferences
 - باز شدن مرحله بعد
@@ -34,6 +34,7 @@
 lib/
 ├── core/
 │   ├── audio/game_feedback.dart
+│   └── audio/game_audio.dart
 │   ├── storage/
 │   ├── theme/app_theme.dart
 │   └── utils/persian_text_normalizer.dart
@@ -46,7 +47,8 @@ lib/
 │           ├── game_page.dart
 │           ├── stage_map_page.dart
 │           └── widgets/letter_board.dart
-└── assets/data/stages.json
+├── assets/data/stages.json
+└── assets/audio/*.wav
 ```
 
 ## معماری
@@ -70,15 +72,14 @@ Flutter → StageRepository → ApiStageRepository → ASP.NET Core API → Data
 - در آینده می‌توان امتیاز طول کلمه، زمان، ستاره و رکورد شخصی را اضافه کرد.
 
 ## سیستم صدا
-فعلاً از Haptic Feedback و صدای داخلی سیستم استفاده می‌شود؛ انتخاب حرف، پاسخ درست، پاسخ اشتباه، استفاده از راهنما و پایان مرحله بازخوردهای متفاوت دارند. فایل صوتی اختصاصی هنوز اضافه نشده است. برای نسخه حرفه‌ای پیشنهاد می‌شود `AudioService` مستقل ایجاد شود و فایل‌های صوتی زیر اضافه شوند:
+پخش صدا در `lib/core/audio/game_audio.dart` مستقل شده است. برای انتخاب حرف، پاسخ درست/غلط، راهنما و پایان مرحله فایل WAV اختصاصی وجود دارد؛ در صورت خطای پخش، صدای سیستمی جایگزین می‌شود. بازخورد لمسی نیز حفظ شده است.
 ```text
 assets/audio/
-├── letter_select.mp3
-├── word_correct.mp3
-├── word_wrong.mp3
-├── hint.mp3
-├── combo.mp3
-└── stage_complete.mp3
+├── letter_select.wav
+├── word_correct.wav
+├── word_wrong.wav
+├── hint.wav
+└── stage_complete.wav
 ```
 
 ## نرمال‌سازی فارسی
@@ -96,7 +97,7 @@ assets/audio/
 - [x] Feedback
 - [x] Score و Combo
 - [x] انیمیشن پایان مرحله
-- [ ] صدای اختصاصی
+- [x] افکت‌های صوتی اختصاصی و fallback به صدای سیستم
 - [x] افکت ذرات سبک برای کلمه صحیح
 - [ ] Confetti حرفه‌ای پایان مرحله
 - [ ] انیمیشن باز شدن مرحله
