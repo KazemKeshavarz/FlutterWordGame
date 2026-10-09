@@ -1,4 +1,4 @@
-import '../../core/utils/persian_text_normalizer.dart';
+import '../../../core/utils/persian_text_normalizer.dart';
 import '../domain/stage.dart';
 
 /// اعتبارسنجی محتوای مراحل برای جلوگیری از ورود کلمه‌های غیرقابل‌ساخت.
