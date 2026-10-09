@@ -269,7 +269,28 @@ class _GamePageState extends State<GamePage> {
                 minHeight: 7,
                 borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  _GameInfoChip(
+                    icon: Icons.stars_rounded,
+                    label: 'امتیاز',
+                    value: _score.toString(),
+                    color: const Color(0xFF286F93),
+                  ),
+                  const Spacer(),
+                  AnimatedBuilder(
+                    animation: widget.progressController,
+                    builder: (context, _) => _GameInfoChip(
+                      icon: Icons.monetization_on_rounded,
+                      label: 'سکه',
+                      value: widget.progressController.progress.coins.toString(),
+                      color: const Color(0xFFB77900),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
                 child: _combo > 1
