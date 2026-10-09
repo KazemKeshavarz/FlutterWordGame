@@ -431,6 +431,42 @@ class _GamePageState extends State<GamePage> {
   }
 }
 
+class _GameInfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _GameInfoChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.09),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 19, color: color),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(fontSize: 12, color: color)),
+          const SizedBox(width: 5),
+          Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: color)),
+        ],
+      ),
+    );
+  }
+}
+
 class _StageCelebration extends StatelessWidget {
   final bool rewardEarned;
 
