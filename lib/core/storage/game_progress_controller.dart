@@ -17,7 +17,7 @@ class GameProgressController extends ChangeNotifier {
 
   GameProgress get progress => _progress;
 
-  Future<void> completeStage(
+  Future<bool> completeStage(
     int stageId, {
     int reward = 20,
     int? maxStageId,
@@ -43,6 +43,7 @@ class GameProgressController extends ChangeNotifier {
 
     await _repository.save(_progress);
     notifyListeners();
+    return !alreadyCompleted;
   }
 
   Future<bool> spendCoins(int amount) async {
