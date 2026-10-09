@@ -47,12 +47,15 @@ class _GamePageState extends State<GamePage> {
   String get _currentWord =>
       _selectedIndexes.map((i) => _stage.letters[i]).join();
 
-  bool _isValidWord(String word) {
+  String? _matchingStageWord(String word) {
     final normalized = PersianTextNormalizer.normalize(word);
-    return _stage.words.any(
-      (item) => PersianTextNormalizer.normalize(item) == normalized,
-    );
+    for (final item in _stage.words) {
+      if (PersianTextNormalizer.normalize(item) == normalized) return item;
+    }
+    return null;
   }
+
+  bool _isValidWord(String word) => _matchingStageWord(word) != null;
 
   void _onSelectionChanged(List<int> indexes) {
     setState(() => _selectedIndexes = indexes);
@@ -134,7 +137,8 @@ class _GamePageState extends State<GamePage> {
       return;
     }
 
-    if (_foundWords.contains(word)) {
+    final matchedWord = _matchingStageWord(word)!;
+    if (_foundWords.contains(matchedWord)) {
       setState(() => _combo = 0);
       _showMessage('این کلمه را قبلاً پیدا کرده‌ای.');
       _clearSelection();
@@ -145,7 +149,7 @@ class _GamePageState extends State<GamePage> {
     final comboBonus = (nextCombo > 6 ? 5 : nextCombo - 1) * 5;
 
     setState(() {
-      _foundWords.add(word);
+      _foundWords.add(matchedWord);
       _combo = nextCombo;
       _score += 10 + comboBonus;
       _selectedIndexes = [];
