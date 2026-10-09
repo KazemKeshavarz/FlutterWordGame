@@ -108,9 +108,9 @@ class _GamePageState extends State<GamePage> {
     }
 
     setState(() {
-      final revealed = Set<int>.from(_revealedLetters[targetWord!] ?? const {});
-      revealed.add(targetIndex!);
-      _revealedLetters[targetWord!] = revealed;
+      final revealed = Set<int>.from(_revealedLetters[targetWord] ?? const {});
+      revealed.add(targetIndex);
+      _revealedLetters[targetWord] = revealed;
     });
 
     await GameFeedback.hintUsed();
@@ -438,6 +438,7 @@ class _GamePageState extends State<GamePage> {
               ),
               ],
             ),
+          ),
             if (_successEffectWord != null)
               WordSuccessEffect(
                 key: ValueKey('success-$_successEffectWord-$_successEffectCombo'),
