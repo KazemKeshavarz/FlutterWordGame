@@ -461,7 +461,7 @@ class _StageCelebration extends StatelessWidget {
                       curve: Curves.easeOutBack,
                       builder: (context, value, child) => Transform.scale(
                         scale: value,
-                        child: Opacity(opacity: value.clamp(0, 1), child: child),
+                        child: Opacity(opacity: value.clamp(0.0, 1.0).toDouble(), child: child),
                       ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
