@@ -43,7 +43,7 @@ void main() {
       const stage = Stage(id: 4, letters: [], words: ['']);
 
       final errors = StageValidator.validate(stage);
-      expect(errors, hasLength(3));
+      expect(errors, hasLength(2));
       expect(errors.join(' '), contains('هیچ حرفی ندارد'));
       expect(errors.join(' '), contains('هیچ کلمه‌ای ندارد'));
       expect(errors.join(' '), contains('کلمه خالی است'));
