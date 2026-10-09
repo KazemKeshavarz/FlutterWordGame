@@ -174,12 +174,15 @@ class _GamePageState extends State<GamePage> {
     if (_foundWords.length == _stage.words.length && !_completionHandled) {
       _completionHandled = true;
       setState(() => _showCelebration = true);
-      await widget.progressController.completeStage(
+      final rewardEarned = await widget.progressController.completeStage(
         _stage.id,
         maxStageId: widget.repository.stages.last.id,
         stars: _stageStars,
       );
-      Future.delayed(const Duration(milliseconds: 900), _showStageCompleted);
+      Future.delayed(
+        const Duration(milliseconds: 900),
+        () => _showStageCompleted(rewardEarned: rewardEarned),
+      );
     }
   }
 
@@ -198,7 +201,7 @@ class _GamePageState extends State<GamePage> {
       ));
   }
 
-  void _showStageCompleted() {
+  void _showStageCompleted({required bool rewardEarned}) {
     if (!mounted) return;
 
     showDialog<void>(
