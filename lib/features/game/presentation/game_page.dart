@@ -112,6 +112,7 @@ class _GamePageState extends State<GamePage> {
       _revealedLetters[targetWord!] = revealed;
     });
 
+    await GameFeedback.hintUsed();
     _showMessage('یک حرف از «$targetWord» با $_hintCost سکه نمایش داده شد.');
   }
 
@@ -186,6 +187,7 @@ class _GamePageState extends State<GamePage> {
       );
       if (!mounted) return;
       setState(() => _rewardEarned = rewardEarned);
+      await GameFeedback.stageCompleted();
       Future.delayed(
         const Duration(milliseconds: 900),
         () => _showStageCompleted(rewardEarned: rewardEarned),
