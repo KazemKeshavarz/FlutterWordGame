@@ -325,12 +325,21 @@ class _GamePageState extends State<GamePage> {
                             width: found ? 1.5 : 1,
                           ),
                         ),
-                        child: Text(
-                          found ? word : maskedWord,
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
-                            color: found ? Colors.green.shade800 : Colors.grey,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 260),
+                          switchInCurve: Curves.easeOutBack,
+                          transitionBuilder: (child, animation) => FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(scale: animation, child: child),
+                          ),
+                          child: Text(
+                            found ? word : maskedWord,
+                            key: ValueKey('${found ? 'found' : 'masked'}-${found ? word : maskedWord}'),
+                            style: TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              color: found ? Colors.green.shade800 : Colors.grey,
+                            ),
                           ),
                         ),
                       );
