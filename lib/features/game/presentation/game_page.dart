@@ -197,8 +197,20 @@ class _GamePageState extends State<GamePage> {
   }
 
   int get _stageStars {
-    if (_score >= _stage.words.length * 15) return 3;
-    if (_score >= _stage.words.length * 10) return 2;
+    // امتیاز پایه هر کلمه ۱۰ است؛ امتیاز کامل ممکن با توجه به Combo محاسبه می‌شود.
+    // این روش باعث می‌شود مرحله‌های کوتاه هم بتوانند سه ستاره بگیرند.
+    final wordCount = _stage.words.length;
+    if (wordCount == 0) return 1;
+
+    var maximumScore = 0;
+    for (var index = 1; index <= wordCount; index++) {
+      final comboBonus = (index > 6 ? 5 : index - 1) * 5;
+      maximumScore += 10 + comboBonus;
+    }
+
+    final performance = _score / maximumScore;
+    if (performance >= 0.80) return 3;
+    if (performance >= 0.50) return 2;
     return 1;
   }
 
